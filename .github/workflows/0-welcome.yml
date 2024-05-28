@@ -1,91 +1,41 @@
-name: Step 0, Welcome
+## Step 1: Create a workflow file
 
-# This step triggers after the learner creates a new repository from the template.
-# This workflow updates from step 0 to step 1.
+_Welcome to "Hello GitHub Actions"! :wave:_
 
-# This will run every time we create push a commit to `main`.
-# Reference: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+**What is _GitHub Actions_?**: GitHub Actions is a flexible way to automate nearly every aspect of your team's software workflow. You can automate testing, continuously deploy, review code, manage issues and pull requests, and much more. The best part, these workflows are stored as code in your repository and easily shared and reused across teams. To learn more, check out these resources:
 
-# Reference: https://docs.github.com/en/actions/security-guides/automatic-token-authentication
-permissions:
-  # Need `contents: read` to checkout the repository.
-  # Need `contents: write` to update the step metadata.
-  contents: write
+- The GitHub Actions feature page, see [GitHub Actions](https://github.com/features/actions).
+- The "GitHub Actions" user documentation, see [GitHub Actions](https://docs.github.com/actions).
 
-jobs:
-  # Get the current step to only run the main job when the learner is on the same step.
-  get_current_step:
-    name: Check current step number
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - id: get_step
-        run: |
-          echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
-    outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+**What is a _workflow_?**: A workflow is a configurable automated process that will run one or more jobs. Workflows are defined in special files in the `.github/workflows` directory and they execute based on your chosen event. For this exercise, we'll use a `pull_request` event.
 
-  on_start:
-    name: On start
-    needs: get_current_step
+- To read more about workflows, jobs, and events, see "[Understanding GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions)".
+- If you want to learn more about the `pull_request` event before using it, see "[pull_request](https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request)".
 
-    # We will only run this action when:
-    # 1. This repository isn't the template repository.
-    # 2. The step is currently 0.
-    # Reference: https://docs.github.com/en/actions/learn-github-actions/contexts
-    # Reference: https://docs.github.com/en/actions/learn-github-actions/expressions
-    if: >-
-      ${{ !github.event.repository.is_template
-          && needs.get_current_step.outputs.current_step == 0 }}
+To get you started, we ran an Actions workflow in your new repository that, among other things, created a branch for you to work in, called `welcome-workflow`.
 
-    # We'll run Ubuntu for performance instead of Mac or Windows.
-    runs-on: ubuntu-latest
+### :keyboard: Activity: Create a workflow file
 
-    steps:
-      # We'll need to check out the repository so that we can edit the README.
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Let's get all the branches.
+1. Open a new browser tab, and navigate to this same repository. Then, work on the steps in your second tab while you read the instructions in this tab.
+1. Create a pull request. This will contain all of the changes you'll make throughout this part of the course.
 
-      # Make a branch, file, and commit for the learner.
-      - name: Prepare a branch, and file
-        run: |
-          echo "Make sure we are on step 0"
-          if [ "$(cat .github/steps/-step.txt)" != 0 ]
-          then
-            echo "Current step is not 0"
-            exit 0
-          fi
+   Click the **Pull Requests** tab, click **New pull request**, set `base: main` and `compare:welcome-workflow`, click **Create pull request**, then click **Create pull request** again.
 
-          echo "Make a branch"
-          BRANCH=welcome-workflow
-          git checkout -b $BRANCH
+1. Navigate to the **Code** tab.
+1. From the **main** branch dropdown, click on the **welcome-workflow** branch.
+1. Navigate to the `.github/workflows/` folder, then select **Add file** and click on **Create new file**.
+1. In the **Name your file** field, enter `welcome.yml`.
+1. Add the following content to the `welcome.yml` file:
 
-          echo "Make a commit"
-          git config user.name github-actions[bot]
-          git config user.email github-actions[bot]@users.noreply.github.com
-          git commit --allow-empty --message="Create an empty commit"
+   ```yaml copy
+   name: Post welcome comment
+   on:
+     pull_request:
+       types: [opened]
+   permissions:
+     pull-requests: write
+   ```
 
-          echo "Push"
-          git push --set-upstream origin $BRANCH
-
-          echo "Restore main"
-          git checkout main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # In README.md, switch step 0 for step 1.
-      - name: Update to step 1
-        uses: skills/action-update-step@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          from_step: 0
-          to_step: 1
-          branch_name: welcome-workflow
+1. To commit your changes, click **Commit changes**.
+1. Type a commit message, select **Commit directly to the welcome-workflow branch** and click **Commit changes**.
+1. Wait about 20 seconds, then refresh this page (the one you're following instructions from). A separate Actions workflow in the repository (not the workflow you created) will run and will automatically replace the contents of this README file with instructions for the next step.
