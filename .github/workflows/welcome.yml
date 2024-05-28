@@ -1,0 +1,6 @@
+name: "Welcome comment hey hey"
+on: 
+  pull_request: 
+    types: [opened]
+permissions: 
+  pull-requests: write
